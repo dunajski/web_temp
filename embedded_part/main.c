@@ -7,9 +7,6 @@
 #include "types.h"
 #include "uart.h"
 
-uchar stringtosend[] = {"TX WORKS\n"};
-uint32 test;
-
 int main(void)
 {
   EnablePortGpio(C);
@@ -25,19 +22,21 @@ int main(void)
   NVIC_SetPriority(SPI1_IRQn, 0);
   UARTInit();
 
-  PutToSerial(stringtosend, 10);
-
   uint8_t button_down = 0;
+  uint32_t idr_val;
   while (1)
   {
-      uint32_t idr_val = GPIOA->IDR;
-      test+=1;
+      idr_val = GPIOA->IDR;
+      // without debounce atm
       if (idr_val & GPIO_IDR_0)
       {
         // The button is pressed; if it was not already
         // pressed, change the LED state.
         if (!button_down)
+        {
+          TESTSERIALFNC();
           GPIOC->ODR ^= (GPIO_ODR_9);
+        }
         button_down = 1;
       }
       else

@@ -14,7 +14,7 @@ typedef struct
 TCircularBuf Input;
 TCircularBuf Output;
 
-void PutToSerial(uint8 * value, uint16 len)
+void PutToSerial(uint8 *value, uint16 len)
 {
   // fill circular buffer
   while (len--)
@@ -24,6 +24,23 @@ void PutToSerial(uint8 * value, uint16 len)
   }
   // and send 1st byte
   USART1->TDR = Output.fifo[Output.ri++];
+}
+
+// simple fnc to test serial
+// send few bytes and set transmission flag
+// after complet unset flag and let send again
+uint8 test_string[] = "Temp:";
+uint8 test_temp[] = "18";
+
+uint8 test_flag = 1; // 1 - allow send again
+void TESTSERIALFNC(void)
+{
+  if (test_flag)
+  {
+    PutToSerial(test_string, 5);
+    PutToSerial(test_temp, 2);
+    test_flag = 0;
+  }
 }
 
 void UARTInit(void)
@@ -41,29 +58,25 @@ void UARTInit(void)
   USART1->CR1 |= USART_CR1_UE | USART_CR1_RE | USART_CR1_TE | USART_CR1_RXNEIE | USART_CR1_TCIE;
 }
 
-uint8 stringenableled[13] = {"LED ENABLED\n"};
-uint8 stringdisableled[14] = {"LED DISABLED\n"};
-
 void USART1_IRQHandler(void)
 {
   // RX register not empty (RXNE)
   if ((USART1->ISR & USART_ISR_RXNE) == USART_ISR_RXNE)
   {
     uchar rx_char;
-    rx_char = (uchar)(USART1->RDR); /* Receive data, clear flag */
+    rx_char = (uchar)(USART1->RDR); // Receive data, clear flag
 
-    if (rx_char == 'e') // enable LED
+    if (rx_char == 'e')
     {
-      PutToSerial(stringenableled,13);
+      ;
     }
-    else if (rx_char == 'd') // disable LED
+    else if (rx_char == 'd')
     {
-      PutToSerial(stringdisableled,14);
+      ;
     }
 
     Input.fifo[Input.wi++] = rx_char;
-    if (Input.wi == FIFO_SIZE) 
-      Input.wi = 0;
+    if (Input.wi == FIFO_SIZE) Input.wi = 0;
   }
 
   // Transmission complete (TC)
@@ -74,6 +87,11 @@ void USART1_IRQHandler(void)
     {
       USART1->TDR = Output.fifo[Output.ri++];
       if (Output.ri == FIFO_SIZE) Output.ri = 0; // move index to the begin
+    }
+    else
+    {
+      // transmission done
+      test_flag = 1;
     }
   }
 }
