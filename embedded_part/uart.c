@@ -30,7 +30,7 @@ void PutToSerial(uint8 *value, uint16 len)
 // send few bytes and set transmission flag
 // after complet unset flag and let send again
 uint8 test_string[] = "Temp:";
-uint8 test_temp[] = "18";
+uint8 test_temp[] = "18\n";
 
 uint8 test_flag = 1; // 1 - allow send again
 void TESTSERIALFNC(void)
@@ -38,7 +38,7 @@ void TESTSERIALFNC(void)
   if (test_flag)
   {
     PutToSerial(test_string, 5);
-    PutToSerial(test_temp, 2);
+    PutToSerial(test_temp, 3);
     test_flag = 0;
   }
 }
