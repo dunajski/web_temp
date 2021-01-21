@@ -1,1 +1,5 @@
 embedded_part/build/*
+embedded_part/.vscode/.cortex-debug.registers.state.json
+embedded_part/.vscode/.cortex-debug.peripherals.state.json
+embedded_part/web_temp.code-workspace
+embedded_part/.vscode/settings.json
